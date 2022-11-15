@@ -2,7 +2,7 @@
 
 **NOTE:** <br>
 **This library is not complete; it's usable, but every function mentioned**
-**mentioned may not be implemented yet.**
+**may not be implemented yet.**
 
 # PXX
 
