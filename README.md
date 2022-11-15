@@ -1,5 +1,9 @@
 ![](https://img.shields.io/badge/version-0.3-blue?style=for-the-badge&logo=C%2B%2B)
 
+**NOTE:** <br>
+**This library is not complete; it's usable, but every function mentioned**
+**mentioned may not be implemented yet.**
+
 # PXX
 
 PXX is a header-only library designed to make using the Python C Api with C++
