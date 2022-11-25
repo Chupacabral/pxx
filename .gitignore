@@ -36,5 +36,9 @@ makefile
 
 main
 main.cpp
+test
+test.cpp
 *.py
 .vscode/**
+
+__pycache__/**
