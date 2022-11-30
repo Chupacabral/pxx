@@ -17,35 +17,35 @@ namespace pxx {
   class List : public Item {
     public:
       List() {
-        this->object = PyList_New(0);
+        m_object = PyList_New(0);
       }
 
       List(PyObject* object) {
         if (PyList_Check(object)) {
-          this->object = object;
+          m_object = object;
         }
         else {
-          this->object = PyList_New(1);
-          PyList_SetItem(this->object, 0, object);
+          m_object = PyList_New(1);
+          PyList_SetItem(m_object, 0, object);
         }
       }
 
       template <typename T>
       List(std::vector<T> list) {
-        this->object = to_pyobject(list);
+        m_object = to_pyobject(list);
       }
 
       template <typename T>
       List(std::initializer_list<T> list) {
-        this->object = to_pyobject(list);
+        m_object = to_pyobject(list);
       }
 
-      size_t size() const { return PyList_Size(this->object); }
+      size_t size() const { return PyList_Size(m_object); }
 
       template <typename T>
       bool append(T item) {
         // 0 means successful insertion.
-        return PyList_Append(this->object, to_pyobject(item)) == 0;
+        return PyList_Append(m_object, to_pyobject(item)) == 0;
       }
 
       template <typename T>
@@ -54,14 +54,14 @@ namespace pxx {
         if (index < 0) { index = this->size() + index; }
 
         // -1 means exception for insertion.
-        return PyList_Insert(this->object, index, to_pyobject(item)) != -1;
+        return PyList_Insert(m_object, index, to_pyobject(item)) != -1;
       }
 
       Item get(long long index) const {
         // Allow for negative indices by converting to positive.
         if (index < 0) { index = this->size() + index; }
 
-        return Item(PyList_GetItem(this->object, index));
+        return Item(PyList_GetItem(m_object, index));
       }
 
       Item operator[](long long index) const {
@@ -74,7 +74,7 @@ namespace pxx {
         if (index < 0) { index = this->size() + index; }
 
         // -1 means out of bounds exception.
-        return PyList_SetItem(this->object, index, to_pyobject(item)) != -1;
+        return PyList_SetItem(m_object, index, to_pyobject(item)) != -1;
       }
 
       List slice(long long low, long long high) {
@@ -85,19 +85,19 @@ namespace pxx {
         if (low < 0) { low = this->size() - low; }
         if (high < 0) { high = this->size() - high; }
 
-        PyObject* newList = PyList_GetSlice(this->object, low, high);
+        PyObject* newList = PyList_GetSlice(m_object, low, high);
 
         return List(newList);
       }
 
       bool sort() {
         // -1 means sort failure.
-        return PyList_Sort(this->object) != -1;
+        return PyList_Sort(m_object) != -1;
       }
 
       bool reverse() {
         // -1 means reversal failure.
-        return PyList_Reverse(this->object) != -1;
+        return PyList_Reverse(m_object) != -1;
       }
 
       // TODO: PyList_AsTuple

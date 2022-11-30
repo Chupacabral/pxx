@@ -8,16 +8,16 @@ namespace pxx {
   class Boolean : public Item {
     public:
       Boolean() {
-        this->object = PyBool_FromLong(false);
+        m_object = PyBool_FromLong(false);
       }
 
       Boolean(bool value) {
-        this->object = PyBool_FromLong(value);
+        m_object = PyBool_FromLong(value);
       }
 
       template <typename T>
       Boolean (T value) {
-        this->object = PyBool_FromLong(value);
+        m_object = PyBool_FromLong(value);
       }
   };
 }

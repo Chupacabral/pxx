@@ -14,24 +14,24 @@ namespace pxx {
       double MIN = PyFloat_GetMin();
       
       Float() {
-        this->object = NULL;
+        m_object = NULL;
       }
 
       Float(double n) {
-        this->object = PyFloat_FromDouble(n);
+        m_object = PyFloat_FromDouble(n);
       }
 
       Float(const char* n) {
-        this->object = PyFloat_FromString(to_pyobject(n));
+        m_object = PyFloat_FromString(to_pyobject(n));
       }
 
       Float(std::string n) {
-        this->object = PyFloat_FromString(to_pyobject(n));
+        m_object = PyFloat_FromString(to_pyobject(n));
       }
 
       template <typename T>
       Float(T n) {
-        this->object = PyFloat_FromDouble(n);
+        m_object = PyFloat_FromDouble(n);
       }
 
       // TODO: PyFloat_GetInfo after defining NamedTuple (or whatever structseq
