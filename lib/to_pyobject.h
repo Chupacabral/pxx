@@ -9,6 +9,10 @@
 #include "item.h"
 
 namespace pxx {
+  PyObject* to_pyobject(char text) {
+    return PyUnicode_FromString(std::string(1, text).c_str());
+  }
+
   PyObject* to_pyobject(const char* text) {
     return PyUnicode_FromString(text);
   }
@@ -29,33 +33,87 @@ namespace pxx {
       : PyBool_FromLong(false);
   }
 
-  /**
-   * Creates a Python list object from the given vector.
-  */
-  template <typename T>
-  PyObject* to_pyobject(std::vector<T> list) {
-    PyObject* newList = PyList_New(0);
+  PyObject* to_pyobject(std::vector<PyObject*> list) {
+    PyObject* newList = PyList_New(list.size());
 
-    for (const auto item : list) {
-      PyObject* itemObject = to_pyobject(item);
-
-      PyList_Append(newList, itemObject);
+    int index = 0;
+    for (auto item = list.begin(); item < list.end(); item++, index++) {
+      PyList_SetItem(newList, index, *item);
+      Py_XINCREF(*item);
     }
 
     return newList;
   }
 
+  PyObject* to_pyobject(std::initializer_list<PyObject*> list) {
+    PyObject* newList = PyList_New(list.size());
+
+    int index = 0;
+    for (auto item = list.begin(); item < list.end(); item++, index++) {
+      PyList_SetItem(newList, index, *item);
+      Py_XINCREF(*item);
+    }
+
+    return newList;
+  }
+
+  PyObject* to_pyobject(std::vector<Item> list) {
+    PyObject* newList = PyList_New(list.size());
+
+    int index = 0;
+    for (auto item = list.begin(); item < list.end(); item++, index++) {
+      PyList_SetItem(newList, index, item->to_object());
+      Py_XINCREF(item->to_object());
+    }
+
+    return newList;
+  }
+
+  PyObject* to_pyobject(std::initializer_list<Item> list) {
+    PyObject* newList = PyList_New(list.size());
+
+    int index = 0;
+    for (auto item = list.begin(); item < list.end(); item++, index++) {
+      PyList_SetItem(newList, index, item->to_object());
+      Py_XINCREF(item->to_object());
+    }
+
+    return newList;
+  }
+
+  // If it's not a vector of PyObjects or Items, then it shouldn't be
+  // something that needs to track a PyObject reference to as it will be
+  // creating new PyObjects.
+  /* */
+  /**
+   * Creates a Python list object from the given vector.
+  */
+  template <typename T>
+  PyObject* to_pyobject(std::vector<T> list) {
+    PyObject* newList = PyList_New(list.size());
+
+    int index = 0;
+    for (auto item = list.begin(); item < list.end(); item++, index++) {
+      PyList_SetItem(newList, index, to_pyobject(*item));
+    }
+
+    return newList;
+  }
+
+  // If it's not a list of PyObjects or Items, then it shouldn't be
+  // something that needs to track a PyObject reference to as it will be
+  // creating new PyObjects.
+  /* */
   /**
    * Creates a Python list object from the given initializer list.
   */
   template <typename T>
   PyObject* to_pyobject(std::initializer_list<T> list) {
-    PyObject* newList = PyList_New(0);
+    PyObject* newList = PyList_New(list.size());
 
-    for (const auto item : list) {
-      PyObject* itemObject = to_pyobject(item);
-
-      PyList_Append(newList, itemObject);
+    int index = 0;
+    for (auto item = list.begin(); item < list.end(); item++, index++) {
+      PyList_SetItem(newList, index, to_pyobject(*item));
     }
 
     return newList;

@@ -31,7 +31,7 @@ namespace pxx {
       ///        Item given into the new item and increments the reference
       ///        count for it.
       /// @param item The Item to copy from.
-      Item(Item& item) : m_object(item.to_object()) {
+      Item(const Item& item) : m_object(item.to_object()) {
         // Increment reference count as we have copied reference.
         // Will cancel out with decrement when object destructed.
         Py_XINCREF(m_object);
@@ -61,6 +61,18 @@ namespace pxx {
         // NULL.
         Py_CLEAR(m_object);
       }
+
+      /// @brief Increments the reference count for the Python object within
+      ///        the Item.
+      ///        DO NOT USE THIS UNLESS YOU ARE ABSOLUTELY SURE YOU NEED TO.
+      ///        PXX ITEMS AUTOMATICALLY MANAGE THEIR REFERENCE COUNTS.
+      void add_reference() { Py_XINCREF(m_object); }
+
+      /// @brief Decrements the reference count for the Python object within
+      ///        the Item.
+      ///        DO NOT USE THIS UNLESS YOU ARE ABSOLUTELY SURE YOU NEED TO.
+      ///        PXX ITEMS AUTOMATICALLY MANAGE THEIR REFERENCE COUNTS.
+      void remove_reference() { Py_XDECREF(m_object); }
 
       bool exists() const      { return m_object != NULL; }
       bool is_none() const     { return m_object == Py_None; }
@@ -93,7 +105,7 @@ namespace pxx {
       }
 
       template <typename T>
-      Item get_attr(T attrName) {
+      Item get_attr(T attrName) const {
         // Returns new reference.
         PyObject* attr = PyObject_GetAttr(m_object, to_pyobject(attrName));
 
@@ -173,7 +185,7 @@ namespace pxx {
         Py_XINCREF(item);
       }
 
-      void operator=(Item& item) {
+      void operator=(const Item& item) {
         m_object = item.to_object();
 
         // Increment reference count as we have copied reference.
