@@ -1,11 +1,11 @@
 #ifndef PXX_TUPLE_H
 #define PXX_TUPLE_H
 
-#include "py_types.h"
-#include "item.h"
-#include "to_pyobject.h"
+#include <Python.h>
 #include <map>
 #include <string>
+#include "item.h"
+#include "to_pyobject.h"
 
 // NOTE: Type "long long" used instead of "size_t" for accessing array because
 //       size_t is unsigned, but ability to access array using negative
@@ -20,7 +20,7 @@ namespace pxx {
         this->object = PyTuple_New(0);
       }
 
-      Tuple(py::Any object) {
+      Tuple(PyObject* object) {
         if (PyTuple_Check(object)) {
           this->object = object;
         }
@@ -34,7 +34,7 @@ namespace pxx {
         this->object = PyTuple_New(list.size());
 
         for (int x = 0; x < list.size(); x++) {
-          py::Any newObject = to_pyobject(list.at(x));
+          PyObject* newObject = to_pyobject(list.at(x));
           PyTuple_SetItem(this->object, x, newObject);
         }
       }
@@ -44,7 +44,7 @@ namespace pxx {
         this->object = PyTuple_New(list.size());
 
         for (int x = 0; x < list.size(); x++) {
-          py::Any newObject = to_pyobject(list.at(x));
+          PyObject* newObject = to_pyobject(list.at(x));
           PyTuple_SetItem(this->object, x, newObject);
         }
       }

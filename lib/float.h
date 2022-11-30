@@ -1,11 +1,11 @@
 #ifndef PXX_FLOAT_H
 #define PXX_FLOAT_H
 
-#include "py_types.h"
-#include "item.h"
-#include "to_pyobject.h"
+#include <Python.h>
 #include <map>
 #include <string>
+#include "item.h"
+#include "to_pyobject.h"
 
 namespace pxx {
   class Float : public Item {

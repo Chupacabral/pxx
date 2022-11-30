@@ -1,11 +1,11 @@
 #ifndef PXX_DICT_H
 #define PXX_DICT_H
 
-#include "py_types.h"
-#include "item.h"
-#include "to_pyobject.h"
+#include <Python.h>
 #include <map>
 #include <string>
+#include "item.h"
+#include "to_pyobject.h"
 
 namespace pxx {
   class Dict : public Item {
@@ -21,7 +21,7 @@ namespace pxx {
 
       template <typename K>
       Item get(K key, bool errors = false) const {
-        py::Any keyObject = to_pyobject(key);
+        PyObject* keyObject = to_pyobject(key);
 
         return errors
           ? PyDict_GetItem(this->object, keyObject)
@@ -30,14 +30,14 @@ namespace pxx {
 
       template <typename K>
       Item operator[](K key) const {
-        py::Any foundItem = PyDict_GetItem(this->object, to_pyobject(key));
+        PyObject* foundItem = PyDict_GetItem(this->object, to_pyobject(key));
         return Item(foundItem);
       }
 
       template <typename K, typename V>
       bool set(K key, V value) {
-        py::Any keyObject = to_pyobject(key);
-        py::Any valObject = to_pyobject(value);
+        PyObject* keyObject = to_pyobject(key);
+        PyObject* valObject = to_pyobject(value);
 
         return PyDict_SetItem(this->object, keyObject, valObject) == 0;
       }
@@ -51,13 +51,13 @@ namespace pxx {
       //       (This should work when ready)
       //
       // pxx::List pxx::Dict::items() {
-      //   py::List keys = PyDict_Keys(this->object);
-      //   py::List items = PyList_New(0);
+      //   PyObject* keys = PyDict_Keys(this->object);
+      //   PyObject* items = PyList_New(0);
 
       //   for (int x = 0; x < PyList_Size(keys); x++) {
-      //     py::Tuple pair = PyTuple_New(2);
-      //     py::Any key = PyList_GetItem(keys, x);
-      //     py::Any value = PyDict_GetItem(this->object, key);
+      //     PyObject* pair = PyTuple_New(2);
+      //     PyObject* key = PyList_GetItem(keys, x);
+      //     PyObject* value = PyDict_GetItem(this->object, key);
 
       //     PyTuple_SetItem(pair, 0, key);
       //     PyTuple_SetItem(pair, 1, value);
@@ -69,12 +69,12 @@ namespace pxx {
       // }
 
       std::map<Item, Item> to_map() const {
-        py::List keys = PyDict_Keys(this->object);
+        PyObject* keys = PyDict_Keys(this->object);
         std::map<Item, Item> result;
 
         for (int x = 0; x < PyList_Size(keys); x++) {
-          py::Any key = PyList_GetItem(keys, x);
-          py::Any value = PyDict_GetItem(this->object, key);
+          PyObject* key = PyList_GetItem(keys, x);
+          PyObject* value = PyDict_GetItem(this->object, key);
 
           result.insert({{ Item(key), Item(value) }});
         }

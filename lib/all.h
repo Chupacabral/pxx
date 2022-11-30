@@ -1,7 +1,6 @@
 #ifndef PXX_LIB_ALL_H
 #define PXX_LIB_ALL_H
 
-#include "py_types.h"
 #include "to_pyobject.h"
 
 #include "item.h"

@@ -1,11 +1,11 @@
 #ifndef PXX_INT_H
 #define PXX_INT_H
 
-#include "py_types.h"
-#include "item.h"
-#include "to_pyobject.h"
+#include <Python.h>
 #include <map>
 #include <string>
+#include "item.h"
+#include "to_pyobject.h"
 
 namespace pxx {
   class Int : public Item {

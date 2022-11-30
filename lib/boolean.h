@@ -1,7 +1,7 @@
 #ifndef PXX_BOOL_H
 #define PXX_BOOL_H
 
-#include "py_types.h"
+#include <Python.h>
 #include "item.h"
 
 namespace pxx {

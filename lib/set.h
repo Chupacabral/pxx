@@ -1,7 +1,7 @@
 #ifndef PXX_SET_H
 #define PXX_SET_H
 
-#include "py_types.h"
+#include <Python.h>
 #include "item.h"
 #include "to_pyobject.h"
 
@@ -14,14 +14,14 @@ namespace pxx {
 
       template <typename T>
       Set(std::vector<T> list) {
-        py::List items = to_pyobject(list);
+        PyObject* items = to_pyobject(list);
 
         this->object = PySet_New(items);
       }
 
       template <typename T>
       Set(std::initializer_list<T> list) {
-        py::List items = to_pyobject(list);
+        PyObject* items = to_pyobject(list);
 
         this->object = PySet_New(items);
       }
@@ -32,7 +32,7 @@ namespace pxx {
 
       template <typename T>
       bool contains(T key) const {
-        py::Any keyObject = to_pyobject(key);
+        PyObject* keyObject = to_pyobject(key);
 
         // 1 is if key is found, 0 if not found, and -1 if error.
         return PySet_Contains(this->object, keyObject) == 1;
@@ -40,7 +40,7 @@ namespace pxx {
 
       template <typename T>
       bool add(T key) {
-        py::Any keyObject = to_pyobject(key);
+        PyObject* keyObject = to_pyobject(key);
 
         // 0 on success.
         return PySet_Add(this->object, keyObject) == 0;
@@ -48,7 +48,7 @@ namespace pxx {
 
       template <typename T>
       bool discard(T key) {
-        py::Any keyObject = to_pyobject(key);
+        PyObject* keyObject = to_pyobject(key);
 
         // 1 is if key is found, 0 if not found, and -1 if error.
         return PySet_Discard(this->object, keyObject) == 1;
@@ -73,14 +73,14 @@ namespace pxx {
 
       template <typename T>
       FrozenSet(std::vector<T> list) {
-        py::List items = to_pyobject(list);
+        PyObject* items = to_pyobject(list);
 
         this->object = PyFrozenSet_New(items);
       }
 
       template <typename T>
       FrozenSet(std::initializer_list<T> list) {
-        py::List items = to_pyobject(list);
+        PyObject* items = to_pyobject(list);
 
         this->object = PyFrozenSet_New(items);
       }
@@ -91,7 +91,7 @@ namespace pxx {
 
       template <typename T>
       bool contains(T key) const {
-        py::Any keyObject = to_pyobject(key);
+        PyObject* keyObject = to_pyobject(key);
 
         // 1 is if key is found, 0 if not found, and -1 if error.
         return PySet_Contains(this->object, keyObject) == 1;
@@ -99,7 +99,7 @@ namespace pxx {
 
       template <typename T>
       bool add(T key) {
-        py::Any keyObject = to_pyobject(key);
+        PyObject* keyObject = to_pyobject(key);
 
         // 0 on success.
         return PySet_Add(this->object, keyObject) == 0;

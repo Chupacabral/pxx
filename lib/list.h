@@ -1,11 +1,11 @@
 #ifndef PXX_LIST_H
 #define PXX_LIST_H
 
-#include "py_types.h"
-#include "item.h"
-#include "to_pyobject.h"
+#include <Python.h>
 #include <map>
 #include <string>
+#include "item.h"
+#include "to_pyobject.h"
 
 // NOTE: Type "long long" used instead of "size_t" for accessing array because
 //       size_t is unsigned, but ability to access array using negative
@@ -20,7 +20,7 @@ namespace pxx {
         this->object = PyList_New(0);
       }
 
-      List(py::Any object) {
+      List(PyObject* object) {
         if (PyList_Check(object)) {
           this->object = object;
         }
@@ -85,7 +85,7 @@ namespace pxx {
         if (low < 0) { low = this->size() - low; }
         if (high < 0) { high = this->size() - high; }
 
-        py::List newList = PyList_GetSlice(this->object, low, high);
+        PyObject* newList = PyList_GetSlice(this->object, low, high);
 
         return List(newList);
       }

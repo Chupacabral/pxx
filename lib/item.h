@@ -1,7 +1,7 @@
 #ifndef PXX_ITEM_H
 #define PXX_ITEM_H
 
-#include "py_types.h"
+#include <Python.h>
 #include "to_pyobject.h"
 #include <vector>
 #include <map>
@@ -9,11 +9,11 @@
 namespace pxx {
   class Item {
     protected:
-      py::Any object;
+      PyObject* object;
     
     public:
       Item() : object(NULL) {}
-      Item(py::Any item) : object(item) {}
+      Item(PyObject* item) : object(item) {}
 
       template <typename T>
       Item(T item) : object(to_pyobject(item)) {}
@@ -40,16 +40,16 @@ namespace pxx {
         return PyObject_TypeCheck(this->object, type) != 0;
       }
 
-      bool is_instance_of(py::Type cls) const {
+      bool is_instance_of(PyObject* cls) const {
         return PyObject_IsInstance(this->object, cls);
       }
 
-      bool is_subclass(py::Type cls) const {
+      bool is_subclass(PyObject* cls) const {
         return PyObject_IsSubclass(this->object, cls);
       }
 
       bool operator<(const Item other) const {
-        py::Unknown otherObject = other.to_object();
+        PyObject* otherObject = other.to_object();
 
         return &this->object < &otherObject;
       }
@@ -57,8 +57,8 @@ namespace pxx {
       std::string to_string() const {
         if (this->object == NULL) { return nullptr; }
 
-        py::String obString = PyObject_Str(this->object);
-        py::String obUTF = PyUnicode_AsEncodedString(obString, "UTF-8", "~E~");
+        PyObject* obString = PyObject_Str(this->object);
+        PyObject* obUTF = PyUnicode_AsEncodedString(obString, "UTF-8", "~E~");
 
         return PyBytes_AsString(obUTF);
       }
@@ -66,8 +66,8 @@ namespace pxx {
       const char* to_cstring() const {
         if (this->object == NULL) { return NULL; }
 
-        py::String obString = PyObject_Str(this->object);
-        py::String obUTF = PyUnicode_AsEncodedString(obString, "UTF-8", "~E~");
+        PyObject* obString = PyObject_Str(this->object);
+        PyObject* obUTF = PyUnicode_AsEncodedString(obString, "UTF-8", "~E~");
 
         return PyBytes_AsString(obUTF);
       }
@@ -92,7 +92,7 @@ namespace pxx {
         return PyFloat_AsDouble(this->object);
       }
 
-      py::Any to_object() const { return this->object; }
+      PyObject* to_object() const { return this->object; }
 
       std::vector<Item> to_vector() const {
         return std::vector<Item>();
@@ -102,7 +102,7 @@ namespace pxx {
         return std::map<Item, Item>();
       }
 
-      void operator=(py::Any item) { this->object = item; }
+      void operator=(PyObject* item) { this->object = item; }
   };
 }
 
