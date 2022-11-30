@@ -10,15 +10,55 @@ namespace pxx {
   class Item {
     protected:
       PyObject* m_object;
+
+      void clearObject() {
+        m_object = NULL;
+      }
     
     public:
+      
+      /// @brief Creates a new Item with NULL as the Python object inside.
       Item() : m_object(NULL) {}
-      Item(PyObject* item) : m_object(item) {}
 
+      /// @brief Creates a new Item by copying the reference for the given
+      ///        PyObject and incrementing the reference count for it.
+      /// @param item 
+      Item(PyObject* item) : m_object(item) {
+        Py_XINCREF(item);
+      }
+
+      /// @brief Copy constructor for an Item; copies the Python object in the
+      ///        Item given into the new item and increments the reference
+      ///        count for it.
+      /// @param item The Item to copy from.
+      Item(Item& item) : m_object(item.to_object()) {
+        // Increment reference count as we have copied reference.
+        // Will cancel out with decrement when object destructed.
+        Py_XINCREF(m_object);
+      }
+
+      /// @brief Move constructor for an Item; takes the Python object in the
+      ///        Item given into the new Item.
+      /// @param moveItem The item to move the Python object from.
+      Item(Item&& moveItem) : m_object(moveItem.to_object()) {
+        moveItem.clearObject();
+      }
+
+      // Generic "create PyObject*" constructor for Item.
+      // Do not manipulate reference here, as it implicitly makes the reference
+      // since it makes a new PyObject* for construction.
+      /* */
+      /// @brief Generic Item constructor that makes the underlying
+      ///        Python object using the value given.
+      /// @tparam T Any type that is usable to make a Python object.
+      /// @param item The item to use for the new Python object.
       template <typename T>
-      Item(T item) : object(to_pyobject(item)) {}
+      Item(T item) : m_object(to_pyobject(item)) {}
 
+      // Destructor.
       ~Item() {
+        // Decrement reference count for PyObject and set variable to
+        // NULL.
         Py_CLEAR(m_object);
       }
 
@@ -54,31 +94,46 @@ namespace pxx {
 
       template <typename T>
       Item get_attr(T attrName) {
+        // Returns new reference.
         PyObject* attr = PyObject_GetAttr(m_object, to_pyobject(attrName));
 
+        auto result = Item(attr);
 
-      }
-
-      bool operator<(const Item other) const {
-        PyObject* otherObject = other.to_object();
-
-        return &m_object < &otherObject;
+        // Decrement reference to not double-reference since Item() makes a
+        // new reference
+        Py_XDECREF(attr);
       }
 
       std::string to_string() const {
         if (m_object == NULL) { return nullptr; }
 
+        // These create new references.
         PyObject* obString = PyObject_Str(m_object);
         PyObject* obUTF = PyUnicode_AsEncodedString(obString, "UTF-8", "~E~");
 
-        return PyBytes_AsString(obUTF);
+        std::string result = PyBytes_AsString(obUTF);
+
+        // Remove reference to both itermediate PyObjects since we don't need
+        // them anymore.
+        Py_CLEAR(obString);
+        Py_CLEAR(obUTF);
+
+        return result;
       }
 
       const char* to_cstring() const {
         if (m_object == NULL) { return NULL; }
 
+        // These create new references.
         PyObject* obString = PyObject_Str(m_object);
         PyObject* obUTF = PyUnicode_AsEncodedString(obString, "UTF-8", "~E~");
+
+        const char* result = PyBytes_AsString(obUTF);
+
+        // Remove reference to both itermediate PyObjects since we don't need
+        // them anymore.
+        Py_CLEAR(obString);
+        Py_CLEAR(obUTF);
 
         return PyBytes_AsString(obUTF);
       }
@@ -113,7 +168,23 @@ namespace pxx {
         return std::map<Item, Item>();
       }
 
-      void operator=(PyObject* item) { m_object = item; }
+      void operator=(PyObject* item) {
+        m_object = item;
+        Py_XINCREF(item);
+      }
+
+      void operator=(Item& item) {
+        m_object = item.to_object();
+
+        // Increment reference count as we have copied reference.
+        // Will cancel out with decrement when object destructed.
+        Py_XINCREF(m_object);
+      }
+
+      void operator=(Item&& moveItem) {
+        m_object = moveItem.to_object();
+        moveItem.clearObject();
+      }
   };
 }
 
