@@ -92,7 +92,45 @@ more convenient and more in line with the language.
     - **`Interpreter`**
       - This class is for, well, the Python interpreter. <br>
         Creation and deletion will run and close the interpreter automatically
-        for you, but you can also manually do either whenever you want.
+        for you, but you can also manually do either whenever you want without
+        a problem.
+
+- Better Integration with C++ Code
+  - Not only do PXX objects use the aforementioned object orientation and
+    common C++ standard library types, but they are made to be used in C++
+    code themselves with a few key features:
+    - **Operator Overloading**
+      - You can compare the Python values within PXX objects by just using the
+        relevant operator:
+        ```cpp
+        pxx::Int x(1), y(3);
+
+        if (x < y) { /* CODE */ }  // Compares like 1 < 3
+        ```
+      - PXX objects have a `to_string` method, but if you need it to print
+        some output, you can just give the object to the output stream:
+        ```cpp
+        pxx::Int coolNumber(23);
+
+        std::cout << coolNumber;  // prints "23"
+        ```
+    - **Iterators**
+      - Container types implement iterators, meaning you can do a range-based
+        for-loop on the PXX object itself, with no conversion or manual
+        reading required:
+        ```cpp
+        pxx::List numbers({ 1, 2, 3, 4, 5 })
+
+        for (auto number : numbers) {
+          std::cout << number << " ";
+        }
+        // Prints "1 2 3 4 5 "
+        ```
+    - **Copy and Move Semantics**
+      - PXX objects automatically track their references to the underlying
+        Python objects, and implement the relevant copy and move methods
+        to ensure they work with C++ to track the lifetime of these references
+        the best they can.
 ## Installation
 
 As PXX is simply a bunch of header files, you can simply download this

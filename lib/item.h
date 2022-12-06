@@ -5,6 +5,7 @@
 #include "to_pyobject.h"
 #include <vector>
 #include <map>
+#include <iostream>
 
 namespace pxx {
   class Item {
@@ -118,6 +119,8 @@ namespace pxx {
         // Decrement reference to not double-reference since Item() makes a
         // new reference.
         Py_XDECREF(attr);
+
+        return result;
       }
 
       std::string to_string() const {
@@ -200,6 +203,42 @@ namespace pxx {
       void operator=(Item&& moveItem) {
         m_object = moveItem.to_object();
         moveItem.clearObject();
+      }
+
+      bool operator<(Item& item) const {
+        return PyObject_RichCompareBool(m_object, item.to_object(), Py_LT) == 1;
+      }
+
+      bool operator<(PyObject* item) const {
+        return PyObject_RichCompareBool(m_object, item, Py_LT) == 1;
+      }
+
+      template <typename T>
+      bool operator<(T item) const {
+        return PyObject_RichCompareBool(m_object, to_pyobject(item), Py_LT) == 1;
+      }
+
+      bool operator!=(Item& item) const {
+        return PyObject_RichCompareBool(m_object, item.to_object(), Py_NE) == 1;
+      }
+
+      bool operator!=(PyObject* item) const {
+        return PyObject_RichCompareBool(m_object, item, Py_NE) == 1;
+      }
+
+      template <typename T>
+      bool operator!=(T item) const {
+        return PyObject_RichCompareBool(m_object, to_pyobject(item), Py_NE) == 1;
+      }
+
+      /// @brief Overloaded << operator for output streams. For a base pxx
+      ///        Item, will just use to_string().
+      /// @param stream The output stream to print to.
+      /// @param item The pxx Item to output.
+      /// @return The stream with the item printed onto it.
+      friend std::ostream& operator<<(std::ostream& stream, const Item& item) {
+        stream << item.to_string();
+        return stream;
       }
   };
 }

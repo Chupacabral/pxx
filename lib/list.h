@@ -14,11 +14,50 @@
 //       require importing another header).
 
 namespace pxx {
-  class List : public Item {
-    public:
-      // TODO: Modify List constructors to only allow definitions that allow
-      //       for guaranteed correct reference count management.
 
+  class List : public Item {
+    private:
+      class Iterator {
+        protected:
+          const List* m_list;
+          Item m_currentItem;
+          size_t m_index;
+        
+        public:
+          Iterator(List* list, size_t index = 0) : m_list(list) {
+            m_currentItem = index < m_list->size()
+              ? m_list->get(index)
+              : Item(); 
+            
+            m_index = index;
+          }
+
+          Iterator(const List* list, size_t index = 0) : m_list(list) {
+            m_currentItem = index < m_list->size()
+              ? m_list->get(index)
+              : Item();
+            
+            m_index = index;
+          }
+
+          bool operator!=(const Iterator other) const {
+            return m_currentItem.to_object() != other.m_currentItem.to_object();
+          }
+
+          Item operator*() { return m_currentItem; }
+          Item operator->() { return m_currentItem; }
+          const Item operator*() const { return m_currentItem; }
+
+          void operator++() {
+            m_index++;
+
+            m_currentItem = m_index < m_list->size()
+              ? m_list->get(m_index)
+              : Item();
+          }
+      };
+
+    public:
       /// @brief Creates a new List with an empty Python list object inside.
       List() {
         m_object = PyList_New(0);
@@ -437,6 +476,32 @@ namespace pxx {
         m_object = newList;
 
         return popped;
+      }
+
+      std::vector<Item> to_vector() const {
+        std::vector<Item> list;
+
+        for (int x = 0; x < this->size(); x++) {
+          list.push_back(this->get(x));
+        }
+
+        return list;
+      }
+
+      Iterator begin() {
+        return Iterator(this, 0);
+      }
+
+      const Iterator begin() const {
+        return Iterator(this, 0);
+      }
+
+      Iterator end() {
+        return Iterator(this, this->size());
+      }
+
+      const Iterator end() const {
+        return Iterator(this, this->size());
       }
 
       // NOTE: PyList_AsTuple does not need to be implemented as
