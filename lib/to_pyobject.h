@@ -33,49 +33,64 @@ namespace pxx {
       : PyBool_FromLong(false);
   }
 
-  PyObject* to_pyobject(std::vector<PyObject*> list) {
+  PyObject* to_pyobject(std::vector<PyObject*> list, bool stealReferences = false) {
     PyObject* newList = PyList_New(list.size());
 
+    // TODO: CHECK IF POINTERS WORK HERE OR IF DOUBLE *-ING.
     int index = 0;
     for (auto item = list.begin(); item < list.end(); item++, index++) {
+      // Steals Item reference.
       PyList_SetItem(newList, index, *item);
-      Py_XINCREF(*item);
+
+      // Add reference to cancel out stolen reference, if wanted.
+      if (!stealReferences) { Py_XINCREF(*item); }
     }
 
     return newList;
   }
 
-  PyObject* to_pyobject(std::initializer_list<PyObject*> list) {
+  PyObject* to_pyobject(std::initializer_list<PyObject*> list, bool stealReferences = false) {
     PyObject* newList = PyList_New(list.size());
 
     int index = 0;
     for (auto item = list.begin(); item < list.end(); item++, index++) {
+      // Steals item reference.
       PyList_SetItem(newList, index, *item);
-      Py_XINCREF(*item);
+
+      // Add reference to cancel out stolen reference, if wanted.
+      if (!stealReferences) { Py_XINCREF(*item); }
     }
 
     return newList;
   }
 
-  PyObject* to_pyobject(std::vector<Item> list) {
+  PyObject* to_pyobject(std::vector<Item> list, bool stealReferences = false) {
     PyObject* newList = PyList_New(list.size());
 
     int index = 0;
     for (auto item = list.begin(); item < list.end(); item++, index++) {
+      // Steals item reference.
       PyList_SetItem(newList, index, item->to_object());
-      Py_XINCREF(item->to_object());
+
+      // Add reference to cancel out stolen reference, if wanted.
+      if (!stealReferences) { Py_XINCREF(item->to_object()); }
     }
 
     return newList;
   }
 
-  PyObject* to_pyobject(std::initializer_list<Item> list) {
+  PyObject* to_pyobject(std::initializer_list<Item> list, bool stealReferences = false) {
     PyObject* newList = PyList_New(list.size());
 
     int index = 0;
     for (auto item = list.begin(); item < list.end(); item++, index++) {
+      // Steals item reference.
       PyList_SetItem(newList, index, item->to_object());
-      Py_XINCREF(item->to_object());
+
+      // Add reference to cancel out stolen reference, if wanted.
+      // Need Py_XINCREF as Item.add_reference is non-const and item is
+          // const due to initializer_list.
+      if (!stealReferences) { Py_XINCREF(item->to_object()); }
     }
 
     return newList;

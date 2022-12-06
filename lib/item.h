@@ -22,9 +22,13 @@ namespace pxx {
 
       /// @brief Creates a new Item by copying the reference for the given
       ///        PyObject and incrementing the reference count for it.
-      /// @param item 
-      Item(PyObject* item) : m_object(item) {
-        Py_XINCREF(item);
+      /// @param item The PyObject to put into the Item.
+      /// @param stealReference Whether to "steal" the PyObject reference
+      ///                       or increment the reference count for it.
+      Item(PyObject* item, bool stealReference = false) : m_object(item) {
+        if (!stealReference) {
+          Py_XINCREF(item);
+        }
       }
 
       /// @brief Copy constructor for an Item; copies the Python object in the
@@ -112,7 +116,7 @@ namespace pxx {
         auto result = Item(attr);
 
         // Decrement reference to not double-reference since Item() makes a
-        // new reference
+        // new reference.
         Py_XDECREF(attr);
       }
 
@@ -173,11 +177,11 @@ namespace pxx {
       PyObject* to_object() const { return m_object; }
 
       std::vector<Item> to_vector() const {
-        return std::vector<Item>();
+        return std::vector<Item>({ this });
       }
 
       std::map<Item, Item> to_map() const {
-        return std::map<Item, Item>();
+        return std::map<Item, Item>({{ this, this }});
       }
 
       void operator=(PyObject* item) {
