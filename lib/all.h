@@ -3,6 +3,7 @@
 
 #include "to_pyobject.h"
 
+#include "runtime.h"
 #include "item.h"
 
 #include "int.h"
