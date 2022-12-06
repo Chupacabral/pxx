@@ -114,6 +114,9 @@ more convenient and more in line with the language.
 
         std::cout << coolNumber;  // prints "23"
         ```
+        Note that types like `Float` will actually convert to the related
+        C++ value (in that case, `double`), which will allow them to work
+        with IO manipulators and formatters better.
     - **Iterators**
       - Container types implement iterators, meaning you can do a range-based
         for-loop on the PXX object itself, with no conversion or manual
@@ -131,6 +134,7 @@ more convenient and more in line with the language.
         Python objects, and implement the relevant copy and move methods
         to ensure they work with C++ to track the lifetime of these references
         the best they can.
+
 ## Installation
 
 As PXX is simply a bunch of header files, you can simply download this
