@@ -157,6 +157,12 @@ namespace pxx {
         return PyBytes_AsString(obUTF);
       }
 
+      bool to_bool() const {
+        if (m_object == NULL) { return false; }
+
+        return this->is_truthy();
+      }
+
       int to_int() const {
         return PyLong_AsLong(m_object);
       }
