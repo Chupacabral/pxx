@@ -172,7 +172,7 @@ you would use it like:
 
 int main() {
   auto python = pxx::Interpreter();
-  python.add_dir_to_path(); // This ensures your .py file is loaded.
+  python.add_to_pypath(); // This ensures your .py file is loaded.
 
   // If module or function not found, will just return pxx::None but not
   // crash. Python will still make errors in the background, though.
