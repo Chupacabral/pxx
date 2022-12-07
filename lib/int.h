@@ -46,7 +46,7 @@ namespace pxx {
       /// @param stream The output stream to print to.
       /// @param item The pxx Float to output.
       /// @return The stream with the float printed onto it.
-      friend std::ostream& operator<<(std::ostream& stream, const Float& item) {
+      friend std::ostream& operator<<(std::ostream& stream, const Int& item) {
         stream << item.to_longlong();
         return stream;
       }

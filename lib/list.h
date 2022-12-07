@@ -389,6 +389,10 @@ namespace pxx {
 
       // TODO: Add duplicate to Item class; creates copy of object in a manner
       //       that updates all references as if an entirely new item was made.
+      /* */
+      /// @brief Creates a new copy of the list (not just a reference to the
+      ///        list, but a new list).
+      /// @return A new List with all the same items.
       List duplicate() const {
         // This should work and make new references; test when possible.
         return this->slice(0, this->size());
