@@ -171,15 +171,15 @@ you would use it like:
 #include <iostream>
 
 int main() {
-  auto python = pxx::Interpreter();
-  python.add_to_pypath(); // This ensures your .py file is loaded.
+  pxx::Interpreter python({ .import="code" });
 
   // If module or function not found, will just return pxx::None but not
   // crash. Python will still make errors in the background, though.
-  auto say_greater = pxx::Module("code").get_attr("say_greater");
+  auto say_greater = python["code"].get_attr("say_greater");
 
-  // This will also return pxx::None if say_greater was not found.
-  auto result = say_greater({ pxx::Int(3), pxx::Int(2) });
+  // You can make pxx objects from C++ literal values by putting _py at the
+  // end of numbers and strings.
+  auto result = say_greater({ 3_py, 2_py });
 
   // PXX classes automatically convert to their C++ equivalent values for
   // streams, so you don't need to do "result.to_string()" here.

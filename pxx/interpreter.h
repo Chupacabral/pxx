@@ -57,6 +57,10 @@ namespace pxx {
           : PyImport_ImportModule(name.c_str());
       }
 
+      PyObject* operator [](std::string name) {
+        return this->get_module(name);
+      }
+
       /// @brief Destructs the Interpreter object, finalizing the interpreter
       ///        if still on.
       ~Interpreter() {
