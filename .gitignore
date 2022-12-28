@@ -44,3 +44,4 @@ test.cpp
 __pycache__/**
 
 TODO.txt
+run.sh
