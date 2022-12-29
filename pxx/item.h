@@ -22,15 +22,15 @@ namespace pxx {
         if (!stealReference) { Py_XINCREF(item); }
       }
 
-      Item(Item& item) : m_object(item.pyobject()) {
+      Item(Item& item) : m_object(item.object()) {
         Py_XINCREF(m_object);
       }
 
-      Item(const Item& item) : m_object(item.pyobject()) {
+      Item(const Item& item) : m_object(item.object()) {
         Py_XINCREF(m_object);
       }
 
-      Item(Item&& moveItem) : m_object(moveItem.pyobject()) {
+      Item(Item&& moveItem) : m_object(moveItem.object()) {
         moveItem.m_object = NULL;
       }
 
@@ -38,7 +38,7 @@ namespace pxx {
         Py_CLEAR(m_object);
       }
 
-      PyObject* pyobject() const { return m_object; }
+      PyObject* object() const { return m_object; }
 
       void add_reference() { Py_XINCREF(m_object); }
 
