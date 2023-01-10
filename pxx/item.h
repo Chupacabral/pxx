@@ -2,12 +2,25 @@
 #define PXX_ITEM_H
 
 #include <Python.h>
-#include <vector>
+#include <iostream>
+#include <string>
+// #include <vector>
+
+namespace pxx {
+  class Boolean;
+  class Dict;
+  class Float;
+  class Int;
+  class List;
+  class String;
+}
 
 namespace pxx {
   class Item {
     protected:
       PyObject* m_object;
+
+      void __remove_object__() { m_object = NULL; }
     
     public:
       /// @brief Creates a new Item with NULL as the Python object.
@@ -45,6 +58,7 @@ namespace pxx {
       void remove_reference() { Py_XDECREF(m_object); }
 
       bool exists() const      { return m_object != NULL; }
+      bool nonexistent() const { return m_object == NULL; }
       bool is_none() const     { return m_object == Py_None; }
       bool is_true() const     { return m_object == Py_True; }
       bool is_false() const    { return m_object == Py_False; }
@@ -71,6 +85,18 @@ namespace pxx {
 
       bool is_subclass(PyObject* classObject) const {
         return PyObject_IsSubclass(m_object, classObject);
+      }
+
+      Item get_attr(std::string name) const {
+        PyObject* attr = PyObject_GetAttrString(m_object, name.c_str());
+
+        Item result(attr);
+
+        // Decrement reference to not double-reference since Item() makes a
+        // new reference.
+        result.remove_reference();
+
+        return result;
       }
 
       const char* to_string() const {
@@ -106,6 +132,36 @@ namespace pxx {
       }
 
       double to_double() const { return PyFloat_AsDouble(m_object); }
+
+      friend std::ostream& operator<<(std::ostream& stream, const Item& item) {
+        stream << item.to_string();
+        return stream;
+      }
+
+      Boolean as_boolean();
+      Float as_float();
+      Int as_int();
+      String as_string();
+
+      void operator=(const Item& item) {
+        this->remove_reference();
+
+        m_object = item.m_object;
+
+        this->add_reference();
+      }
+
+      void operator=(Item&& moveItem) {
+        this->remove_reference();
+
+        m_object = moveItem.m_object;
+
+        moveItem.__remove_object__();
+      }
+
+      void operator()() {
+        PyObject_CallNoArgs(m_object);
+      }
   };
 }
 #endif

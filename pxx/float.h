@@ -25,16 +25,18 @@ namespace pxx {
         Py_CLEAR(fmt);
       }
 
-      Float(PyObject* object) {
-        // Try to convert to double.
-        double value = PyFloat_AsDouble(object);
-
-        // New reference for new PyObject created here.
-        m_object = PyFloat_FromDouble(value);
+      Float(Item item) {
+        m_object = PyFloat_FromDouble(item.to_double());
       }
 
-      Float(Item item) {
-        // TODO
+      Float(const Float& item) {
+        m_object = item.m_object;
+        this->add_reference();
+      }
+
+      Float(Float&& moveItem) {
+        m_object = moveItem.m_object;
+        moveItem.__remove_object__();
       }
 
       Float operator -() const {
@@ -49,6 +51,14 @@ namespace pxx {
         return Float(value);
       }
 
+      void operator=(const Float& item) {
+        this->remove_reference();
+
+        m_object = item.object();
+
+        this->add_reference();
+      }
+
       friend std::ostream& operator<<(std::ostream& stream, const Float& item) {
         stream << item.to_double();
         return stream;
@@ -58,6 +68,10 @@ namespace pxx {
 
 pxx::Float operator "" _py(long double integer) {
   return pxx::Float(integer);
+}
+
+pxx::Float pxx::Item::as_float() {
+  return pxx::Float(*this);
 }
 
 #endif

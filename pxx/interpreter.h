@@ -7,17 +7,40 @@
 #include <map>
 #include <initializer_list>
 
+namespace pxx { class Interpreter; }
+
 namespace pxx {
+  class Item;
+}
+
+namespace pxx {
+  namespace __internal__ {
+    Interpreter* interpreter;
+    size_t interpreterRefs = 0;
+  }
+
   class Interpreter {
     protected:
-      std::map<std::string, PyObject*> m_loadedModules;
+      ::std::map<::std::string, PyObject*> m_loadedModules;
+
+      void __set_global_interpreter() {
+        pxx::__internal__::interpreter = this;
+      }
+
+      void __increment_global_interpreter() {
+        pxx::__internal__::interpreterRefs++;
+      }
+
+      void __decremenet_global_interpreter() {
+        pxx::__internal__::interpreterRefs--;
+      }
 
     public:
       struct InterpreterParameters {
         int initsigs = 1;
-        std::string import = "";
-        std::initializer_list<std::string> imports = {};
-        std::string pypath = "";
+        ::std::string import = "";
+        ::std::initializer_list<::std::string> imports = {};
+        ::std::string pypath = "";
       };
 
       /// @brief Creates an Interpreter object and initializes the Python
@@ -28,6 +51,8 @@ namespace pxx {
       ///                 which might be useful when Python is embedded.
       Interpreter(int initsigs = 1) {
         Py_InitializeEx(initsigs);
+
+        __set_global_interpreter();
       }
 
       Interpreter(InterpreterParameters settings) {
@@ -49,15 +74,17 @@ namespace pxx {
             m_loadedModules.insert({{ import, mod }});
           }
         }
+
+        __set_global_interpreter();
       }
 
-      PyObject* get_module(std::string name) {
+      PyObject* get_module(::std::string name) {
         return m_loadedModules.count(name) > 0
           ? m_loadedModules[name]
           : PyImport_ImportModule(name.c_str());
       }
 
-      PyObject* operator [](std::string name) {
+      PyObject* operator [](::std::string name) {
         return this->get_module(name);
       }
 
@@ -103,7 +130,7 @@ namespace pxx {
       ///        directory by default.
       /// @param path The directory path to add the the pypath.
       /// @return Whether the path was added successfully.
-      bool add_to_pypath(std::string path = ".") {
+      bool add_to_pypath(::std::string path = ".") {
         // Borrowed reference, do not need to deref.
         PyObject* pypath = PySys_GetObject("path");
         // New reference to new object.
@@ -117,7 +144,14 @@ namespace pxx {
 
         return successful;
       }
+      
+      ::std::map<::std::string, PyObject*> loaded_modules() {
+        return m_loadedModules;
+      }
   };
+
+  Item get_module(std::string name);
+  Item get_attr(std::string module, std::initializer_list<std::string> names);
 }
 
 #endif

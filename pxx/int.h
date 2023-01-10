@@ -21,18 +21,20 @@ namespace pxx {
         m_object = PyLong_FromString(n.c_str(), NULL, base);
       }
 
-      Int(PyObject* object) {
-        long long intValue = PyLong_AsLongLong(object);
-
+      Int(Item item) {
         // New reference for new PyObject created here.
-        m_object = PyLong_FromLongLong(intValue);
+        m_object = PyLong_FromLongLong(item.to_longlong());
       }
 
-      Int(Item item) {
-        long long intValue = item.to_longlong();
+      Int(const Int& item) {
+        m_object = item.object();
 
-        // New reference for new PyObject created here.
-        m_object = PyLong_FromLongLong(intValue);
+        this->add_reference();
+      }
+
+      Int(Int&& moveItem) {
+        m_object = moveItem.object();
+        moveItem.__remove_object__();
       }
 
       Int operator -() const {
@@ -47,6 +49,22 @@ namespace pxx {
         return Int(value);
       }
 
+      void operator=(const Int& item) {
+        this->remove_reference();
+
+        m_object = item.object();
+
+        this->add_reference();
+      }
+
+      void operator=(Int&& moveItem) {
+        this->remove_reference();
+
+        m_object = moveItem.object();
+
+        moveItem.__remove_object__();
+      }
+
       friend std::ostream& operator<<(std::ostream& stream, const Int& item) {
         stream << item.to_longlong();
         return stream;
@@ -56,6 +74,10 @@ namespace pxx {
 
 pxx::Int operator "" _py(unsigned long long integer) {
   return pxx::Int(integer);
+}
+
+pxx::Int pxx::Item::as_int() {
+  return pxx::Int(*this);
 }
 
 #endif

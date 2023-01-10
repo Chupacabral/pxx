@@ -58,4 +58,24 @@ pxx::Item operator "" _pyfn(const char* text) {
   return result;
 }
 
+pxx::Item operator "" _pyfn(const char* text, long unsigned int len) {
+  pxx::Item result;
+
+  if (pxx::__internal__::interpreter != nullptr) {
+    for (auto module : pxx::__internal__::interpreter->loaded_modules()) {
+      std::string name = module.first;
+      pxx::Item mod = module.second;
+
+      pxx::Item foundFunction = mod.get_attr(text);
+
+      if (foundFunction.exists()) {
+        result = foundFunction;
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
 #endif

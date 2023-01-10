@@ -7,133 +7,79 @@
 # PXX
 
 PXX is a header-only library designed to make using the Python C Api with C++
-more convenient and more in line with the language.
+more convenient and more in-line with the language and its features.
 
 ## Features
 
-- More convenient
-  - PXX tries to reduce the boilerplate for basic tasks that would happen when
-    using the Python C API while not rewriting the whole thing.
-  - PXX uses C++ language features to provide a more abstract and powerful API,
-    utilizing function overloading and features like initialization lists to
-    make functions more flexible and convenient.
-  - Straightforward API:
-    - Need to make a Python value of type `X`? You can use the class `pxx::X`.
-      - You can use equivalent C++ values when creating a Python object to
-        avoid a lot of boilerplate. For example, creating a list of ints with
-        the Python C API:
-        ```c++
-        PyObject* list = PyList_New(3);
-        PyList_SetItem(list, 0, PyLong_FromLong(1));
-        PyList_SetItem(list, 1, PyLong_FromLong(2));
-        PyList_SetItem(list, 2, PyLong_FromLong(3));
-        ```
-        The same with PXX:
-        ```c++
-        pxx::List list({ 1, 2, 3 });
-        ```
-    - Need to get the C++ value of type `Y` from a `pxx::X` object? The method
-      is called `X.to_y`.
-    - Need to get an attribute? Instead of `PyObject_GetAttrString`, it's just
-      `X.get_attr`
-      - Instead of a bunch of boilerplate just to grab a function, you can do
-        it in a single line like:
-        ```c++
-        auto fn = pxx::Module("stuff").get_attr("cool function");
-        ```
-        If something is not found, `get_attr` will just return a null object
-        instead of throwing an error, allowing a sort of safe navigation when
-        trying to access members
+PXX aims to reduce common boilerplate required for basic tasks when using
+the Python C API.
+&nbsp;
+PXX utilizes C++ features to provide a more abstract and useful API,
+using things such as function overloading, custom literals, and object
+orientation to make code more flexible and covenient.
 
-- Allows Using Common C++ Types
-  - As the Python API is in C, it does not use common container types like
-    vectors, strings, or maps. PXX allows for use of these types with the API:
-    - Functions that take or return strings can use `std::string` instead of
-      `const char*`; if you want C-strings, the relevant functions will have
-      a version with `cstring` in the name.
-    - Functions involving lists will allow for use of `std::vector` (or
-      `std::initializer_list` if you want to give an inline list literal to
-      a function).
-      - The `pxx::List::to_vector` function is perfect for converting a Python list
-        into a C++ value.
-    - Functions involving dictionaries will allow the use of `std::map`
-      (map will be the default, as it keeps track of order like Python's
-       dictionary does).
-      - `to_map` is the dictionary version of `to_vector`
-    - If you *really* need to use another container type, you can use variants
-      of the aforemention methods that takes a lambda to convert the list/dict
-      to the container type
-      - `pxx::List::convert` or `pxx::Dict::convert`
+- You can use equivalent C++ values when creating a Python object to avoid
+  a lot of boilerplate. For example, creating a list of ints with the
+  base Python C API:
+  ```c++
+  PyObject* list = PyList_New(3);
+  PyList_SetItem(list, 0, PyLong_FromLong(1));
+  PyList_SetItem(list, 1, PyLong_FromLong(2));
+  PyList_SetItem(list, 2, PyLong_FromLong(3));
+  ```
+  The same task with PXX:
+  ```c++
+  pxx::List list({ 1, 2, 3 });
+  ```
+- PXX supports custom literals for pxx objects like numbers or strings.
+  Instead of:
+  ```c++
+  pxx::String("Hello, World!");
+  ```
+  if it's more convenient, you can also do:
+  ```c++
+  "Hello, World!"_py;
+  ```
 
-- Actual Object Orientation
-  - As C++ allows for actual objects, so does PXX. For all the main types of
-    objects in Python, there is a class version of it.
+- When you start the interpreter by initializing the `pxx::Interpreter` object,
+  you can give it Python files/modules to load on startup and it will keep
+  track of modules you load with PXX and allow for highly abstracted code like:
+  ```cpp
+  int main() {
+    pxx::Interpreter python({ .import = "python_file" });
+    pxx::Function do_stuff("do_stuff");
+
+    if (do_stuff.exists()) {
+      pxx::String result = do_stuff().as_string();
+      std::cout << result << std::endl;
+    }
     
-    The possible object types in PXX are:
+    return 0;
+  }
+  ```
 
-    - **`Item`**
-      - Much like how all Python C API objects use `PyObject`, this is the base
-        class that all PXX objects are based on. <br>
-        Has all the base methods for checking what kind of Python object
-        the value is, converting it to a C++ value, etc.
+  ```cpp
+  int main() {
+    Py_Initialize();
+    PyObject* pypath = PySys_GetObject("path");
+    PyList_Append(pypath, PyUnicode_FromString("."));
 
-        All methods that return a PXX object will return an `Item`, so
-        if you want a specific type of object you should either use that
-        specific type or convert it like:
-        ```c++
-        pxx::Module shopping("shopping");
-        pxx::List shopping_list(shopping.get_attr("shopping_list"));
-        ```
-    
-    - Containers: **`List`**, **`Dict`**, **`Tuple`**, **`Set`**
-    - Values: **`Int`**, **`Float`**, **`Boolean`**, **`String`**, **`None`**
-    - Other: **`Module`**, **`Class`**, **`Object`**, **`Function`**,
-             **`Error`**
-    - **`Interpreter`**
-      - This class is for, well, the Python interpreter. <br>
-        Creation and deletion will run and close the interpreter automatically
-        for you, but you can also manually do either whenever you want without
-        a problem.
+    PyObject* python_file = PyImport_ImportModule("python_file");
 
-- Better Integration with C++ Code
-  - Not only do PXX objects use the aforementioned object orientation and
-    common C++ standard library types, but they are made to be used in C++
-    code themselves with a few key features:
-    - **Operator Overloading**
-      - You can compare the Python values within PXX objects by just using the
-        relevant operator:
-        ```cpp
-        pxx::Int x(1), y(3);
+    if (do_stuff != NULL) {
+      PyObject* do_stuff = PyObject_GetAttrString(python_file, "do_stuff");
 
-        if (x < y) { /* CODE */ }  // Compares like 1 < 3
-        ```
-      - PXX objects have a `to_string` method, but if you need it to print
-        some output, you can just give the object to the output stream:
-        ```cpp
-        pxx::Int coolNumber(23);
+      if (do_stuff != NULL) {
+        PyObject* result = PyObject_CallNoArgs(do_stuff);
+        const char* result_text = PyUnicode_AsUTF8(result);
 
-        std::cout << coolNumber;  // prints "23"
-        ```
-        Note that types like `Float` will actually convert to the related
-        C++ value (in that case, `double`), which will allow them to work
-        with IO manipulators and formatters better.
-    - **Iterators**
-      - Container types implement iterators, meaning you can do a range-based
-        for-loop on the PXX object itself, with no conversion or manual
-        reading required:
-        ```cpp
-        pxx::List numbers({ 1, 2, 3, 4, 5 })
+        std::cout << result_text << std::endl;
+      }
+    }
 
-        for (auto number : numbers) {
-          std::cout << number << " ";
-        }
-        // Prints "1 2 3 4 5 "
-        ```
-    - **Copy and Move Semantics**
-      - PXX objects automatically track their references to the underlying
-        Python objects, and implement the relevant copy and move methods
-        to ensure they work with C++ to track the lifetime of these references
-        the best they can.
+    return 0;
+  }
+  ```
 
 ## Installation
 
@@ -179,7 +125,7 @@ int main() {
 
   // You can make pxx objects from C++ literal values by putting _py at the
   // end of numbers and strings.
-  auto result = say_greater({ 3_py, 2_py });
+  auto result = say_greater({ 3, 2 });
 
   // PXX classes automatically convert to their C++ equivalent values for
   // streams, so you don't need to do "result.to_string()" here.
